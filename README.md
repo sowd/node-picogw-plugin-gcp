@@ -9,6 +9,6 @@ List of possible language codes is [here](https://cloud.google.com/translate/doc
 
 ### Samples
 
-curl -X POST -F file=@./NurserySample.wav http://localhost:8080/v1/gcp/transcript
-curl -X POST -F file=@./child1.jpg http://localhost:8080/v1/gcp/image-label-detection
+curl -X POST -F file=@./Sample.wav http://localhost:8080/v1/gcp/transcript  
+curl -X POST -F file=@./child1.jpg http://localhost:8080/v1/gcp/image-label-detection  
 curl -X POST -F file=@./child1.jpg http://localhost:8080/v1/gcp/image-face-detection

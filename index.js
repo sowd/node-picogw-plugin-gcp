@@ -59,6 +59,8 @@ function initClouds(){
 
     voiceRecogn.init(pi);
     imageRecogn.init(pi);
+
+    log('Cloud inited.');
 }
 
 /**
@@ -160,7 +162,7 @@ function onProcCall(method, path, args, transport, files) {
  */
 function onUISetSettings(newSettings) {
     if (newSettings.credentials != null) {
-        pi.localStorage.setItem('credentials', newSettings.credentials);
+        pi.localStorage.setItem('credentials', JSON.parse(newSettings.credentials));
         newSettings.credentials = '[Keep secret]'; // Keep it secret
         initClouds();
     }

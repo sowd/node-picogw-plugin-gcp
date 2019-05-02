@@ -2,6 +2,7 @@
 // curl -X POST -F file=@./child1.jpg http://localhost:8080/v1/googletools/image-label-detection
 // curl -X POST -F file=@./child1.jpg http://localhost:8080/v1/googletools/image-face-detection
 
+const fs = require('fs');
 const voiceRecogn = require('./voiceRecogn.js');
 const imageRecogn = require('./imageRecogn.js');
 
@@ -12,8 +13,8 @@ let localStorage;
 module.exports = {
     init: init,
     onCall: onProcCall,
+    onUISetSettings: onUISetSettings,
 };
-
 
 /**
  * Initialize plugin
@@ -24,20 +25,41 @@ function init(pluginInterface) {
     log = pi.log;
     localStorage = pi.localStorage;
 
-    process.env.GOOGLE_APPLICATION_CREDENTIALS = pi.pluginfs._pluginPath+'/gapCredentials.json';
+    try {
+        fs.statSync(pi.pluginfs._pluginPath+'/gapCredentials.json');
+        const creds = fs.readFileSync(pi.pluginfs._pluginPath+'/gapCredentials.json','utf-8');
+        pi.localStorage.setItem('credentials', JSON.parse(creds));
+        initClouds();
+    } catch(e){
+        if( pi.localStorage.getItem('credentials', null) )
+            initClouds();
+    }
+
+    // List available members
+    /*
+    function listMember(obj,pathPrefix){
+        for( let k in obj ){
+            if( typeof obj[k] == 'object') listMember(obj[k],pathPrefix+'.'+k);
+            else if( typeof obj[k] == 'string' ) log(`${pathPrefix}.${k}=${obj[k]}`);
+            else log(`${pathPrefix}.${k}=(${typeof obj[k]})`);
+        }
+    }
+    listMember(pi,'pluginInterface');
+    */
+};
+
+function isCloudInited(){ return voiceRecogn.isInited() && imageRecogn.isInited();}
+
+function initClouds(){
+    const creds = pi.localStorage.getItem('credentials', null);
+    if( creds == null ) return ;
+
+    //log('credentials path:'+pi.localStorage.path+'/credentials');
+    process.env.GOOGLE_APPLICATION_CREDENTIALS = pi.localStorage.path+'/credentials';
 
     voiceRecogn.init(pi);
     imageRecogn.init(pi);
-
-    /* // List available members
-    ['server','net','setting','crypt','pluginfs','config','cmd_opts'].forEach(k1=>{
-        for( let k2 in pi[k1]){
-            const v = (typeof pi[k1][k2]=='string' ? pi[k1][k2] : typeof pi[k1][k2]);
-            console.log(`pluginInterface.${k1}.${k2}=${v}`);
-        }
-    });
-    */
-};
+}
 
 /**
  * onCall handler of plugin
@@ -60,6 +82,10 @@ function onProcCall(method, path, args, transport, files) {
         case 'post':
             if( files == null ){
                 rj({errors:[{message:'No file posted for upload.'}]});
+                return ;
+            }
+            if( !isCloudInited()){
+                rj({errors:[{message:'The cloud credentials are not supplied.'}]});
                 return ;
             }
             switch(path.toLowerCase()){
@@ -124,4 +150,19 @@ function onProcCall(method, path, args, transport, files) {
             break ;
         }
     });
+}
+
+
+/**
+ * Setting value rewriting event for UI
+ * @param {object} newSettings Settings edited for UI
+ * @return {object} Settings to save
+ */
+function onUISetSettings(newSettings) {
+    if (newSettings.credentials != null) {
+        pi.localStorage.setItem('credentials', newSettings.credentials);
+        newSettings.credentials = '[Keep secret]'; // Keep it secret
+        initClouds();
+    }
+    return newSettings;
 }

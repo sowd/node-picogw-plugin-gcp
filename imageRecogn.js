@@ -17,6 +17,8 @@ exports.init = function(pluginInterface){
 	});
 }
 
+exports.isInited = function(){return client != null}
+
 function genImageAnnotationFuncGeneric(funcName){
 	return function(files){
 		function body(file){

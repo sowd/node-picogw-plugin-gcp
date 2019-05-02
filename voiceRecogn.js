@@ -12,6 +12,8 @@ exports.init = function(pluginInterface){
 	client = new speech.SpeechClient();
 }
 
+exports.isInited = function(){return client != null}
+
 exports.recognize = async function(data,config){
     return new Promise((ac,rj)=>{
 		function convertData(cont){

@@ -1,0 +1,13 @@
+{
+    "title": "Google Cloud Platform Settings"
+    ,"type": "object"
+    ,"id":"gcp"
+    ,"properties": {
+        "credentials":{
+            "title":"GCP Credential"
+            ,"description": "Google Cloud Platform credentials. You can make your own credential on the online Google Cloud Platform service."
+            ,"type":"string"
+            ,"format":"textarea"
+        }
+    }
+}
